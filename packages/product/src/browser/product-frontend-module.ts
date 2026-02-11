@@ -5,6 +5,7 @@ import { CustomFrontendApplication } from './frontend-application';
 import { ThemeService } from './theme-service';
 import { CustomWelcomeWidget } from './custom-welcome-widget';
 import { GettingStartedWidget } from '@theia/getting-started/lib/browser/getting-started-widget';
+import '../../style/custom-welcome-widget.css';
 
 export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
    bind(ThemeService).toSelf().inSingletonScope();
