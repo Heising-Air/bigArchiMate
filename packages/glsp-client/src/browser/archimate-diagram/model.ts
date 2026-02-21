@@ -6,7 +6,6 @@ import {
    EditableLabel,
    fadeFeature,
    GChildElement,
-   GEdge,
    GLabel,
    GModelElement,
    GParentElement,
@@ -20,6 +19,7 @@ import {
    RectangularNode,
    WithEditableLabel
 } from '@eclipse-glsp/client';
+import { LibavoidEdge } from 'sprotty-routing-libavoid';
 
 export class ElementNode extends RectangularNode implements WithEditableLabel {
    get editableLabel(): (GChildElement & EditableLabel) | undefined {
@@ -37,7 +37,7 @@ export function isJunctionNode(junction: GModelElement): junction is JunctionNod
    return junction instanceof JunctionNode || false;
 }
 
-export class RelationEdge extends GEdge {}
+export class RelationEdge extends LibavoidEdge {}
 
 export class GEditableLabel extends GLabel implements EditableLabel {
    editControlPositionCorrection = {

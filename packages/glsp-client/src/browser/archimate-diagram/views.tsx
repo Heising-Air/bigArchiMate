@@ -3,7 +3,7 @@
 /** @jsx svg */
 
 import { ARCHIMATE_RELATION_TYPE_MAP } from '@big-archimate/protocol';
-import { angleOfPoint, CircularNodeView, GEdge, GEdgeView, Point, RenderingContext, svg, toDegrees } from '@eclipse-glsp/client';
+import { angleOfPoint, CircularNodeView, GEdge, Point, PolylineEdgeView, RenderingContext, svg, toDegrees } from '@eclipse-glsp/client';
 import { injectable } from 'inversify';
 import { VNode } from 'snabbdom';
 import { DiagramNodeView } from '../views';
@@ -15,7 +15,7 @@ export class ElementNodeView extends DiagramNodeView {}
 export class JunctionNodeView extends CircularNodeView {}
 
 @injectable()
-export class RelationEdgeView extends GEdgeView {
+export class RelationEdgeView extends PolylineEdgeView {
    protected override renderAdditionals(edge: GEdge, segments: Point[], context: RenderingContext): VNode[] {
       const additionals = super.renderAdditionals(edge, segments, context);
       const p1 = segments[segments.length - 2];
