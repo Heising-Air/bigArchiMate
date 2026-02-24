@@ -146,11 +146,15 @@
    color: var(--arrow-filled-fill);
 }
 
-.sprotty-edge.aggregation .arrow,
 .sprotty-edge.realization .arrow,
 .sprotty-edge.specialization .arrow {
    fill: var(--arrow-empty-fill);
    color: var(--arrow-empty-fill);
+}
+
+.sprotty-edge.aggregation .circle {
+    fill: var(--arrow-empty-fill);
+    color: var(--arrow-empty-fill);
 }
 
 .sprotty-edge.serving .arrow,
