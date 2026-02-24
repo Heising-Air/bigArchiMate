@@ -44,10 +44,10 @@ export function createDiagramModule(registry: interfaces.ContainerModuleCallBack
          .inSingletonScope()
          .onActivation((_ctx, router) => {
             router.setOptions({
-               routingType: RouteType.PolyLine,
-               shapeBufferDistance: 120,
-               idealNudgingDistance: 80,
-               segmentPenalty: 500,
+               routingType: RouteType.Orthogonal,
+               segmentPenalty: 50,
+               idealNudgingDistance: 24,
+               shapeBufferDistance: 25,
                nudgeOrthogonalSegmentsConnectedToShapes: true,
                nudgeOrthogonalTouchingColinearSegments: false
             });
