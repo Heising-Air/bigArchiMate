@@ -14,6 +14,7 @@ import {
    ContainerConfiguration,
    DeleteElementContextMenuItemProvider,
    editLabelFeature,
+   GEdge,
    GLabelView,
    gridModule,
    GridSnapper,
@@ -79,7 +80,9 @@ const diagramModule = createDiagramModule((bind, unbind, isBound, rebind) => {
       configureModelElement(context, edgeType, RelationEdge, RelationEdgeView);
    });
 
-   configureModelElement(context, 'magic-connector-edge', RelationEdge, RelationEdgeView);
+   // Use GEdges for magic connector edges, to not get routed with libavoid and therefore not causing issues to
+   // the changeDirection functionality of the magic connector
+   configureModelElement(context, 'magic-connector-edge', GEdge, RelationEdgeView);
 
    ARCHIMATE_JUNCTION_TYPE_MAP.values().forEach(junctionType => {
       configureModelElement(context, junctionType, JunctionNode, JunctionNodeView);
