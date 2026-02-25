@@ -38,6 +38,10 @@ export class RelationEdgeView extends PolylineEdgeView {
       return additionals;
    }
 
+   private effectiveType(edge: GEdge): string {
+      return edge.type.startsWith('proxy-') ? edge.type.substring('proxy-'.length) : edge.type;
+   }
+
    private getTargetMarker(edge: GEdge, p1: Point, p2: Point): VNode | undefined {
       let targetMarkerPath = '';
       if (edge.type === 'magic-connector-edge') {
@@ -54,7 +58,7 @@ export class RelationEdgeView extends PolylineEdgeView {
          ) as any;
       }
 
-      const relationType = ARCHIMATE_RELATION_TYPE_MAP.getReverse(edge.type);
+      const relationType = ARCHIMATE_RELATION_TYPE_MAP.getReverse(this.effectiveType(edge));
 
       if (relationType === 'Specialization' || relationType === 'Realization') {
          targetMarkerPath = 'M 20 -10 L 2 0 L 20 10 Z';
@@ -82,7 +86,7 @@ export class RelationEdgeView extends PolylineEdgeView {
 
    private getSourceMarker(edge: GEdge, p1: Point, p2: Point): VNode | undefined {
       let sourceMarkerPath = '';
-      const relationType = ARCHIMATE_RELATION_TYPE_MAP.getReverse(edge.type);
+      const relationType = ARCHIMATE_RELATION_TYPE_MAP.getReverse(this.effectiveType(edge));
 
       if (relationType === 'Assignment') {
          sourceMarkerPath = 'M 0 0 A 1 1 0 0 0 -14 0 A 1 1 0 0 0 0 0';
