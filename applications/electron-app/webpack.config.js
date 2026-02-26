@@ -37,6 +37,10 @@ configs[0].plugins.push(
             // libavoid wasm for sprotty-routing-libavoid
             from: path.resolve('.', '..', '..', 'node_modules', 'libavoid-js', 'dist', 'libavoid.wasm'),
             to: 'libavoid.wasm'
+         },
+         {
+            from: path.resolve('resources'),
+            to: 'resources'
          }
       ]
    })
