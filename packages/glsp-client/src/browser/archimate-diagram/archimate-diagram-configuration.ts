@@ -14,6 +14,7 @@ import {
    ContainerConfiguration,
    DeleteElementContextMenuItemProvider,
    editLabelFeature,
+   GEdge,
    GLabelView,
    gridModule,
    GridSnapper,
@@ -23,7 +24,7 @@ import {
 } from '@eclipse-glsp/client';
 import { GLSPDiagramConfiguration } from '@eclipse-glsp/theia-integration';
 import { Container } from '@theia/core/shared/inversify/index';
-import { ArchiMateDiagramLanguage } from '../../common/diagram-language';
+import { ArchiMateDiagramLanguage } from '../../common';
 import { createDiagramModule } from '../diagram-module';
 import { CutOffCornerNodeView } from './cut-off-corner-view';
 import { archiMateEdgeCreationToolModule } from './edge-creation-tool/edge-creation-tool-module';
@@ -77,9 +78,14 @@ const diagramModule = createDiagramModule((bind, unbind, isBound, rebind) => {
 
    ARCHIMATE_RELATION_TYPE_MAP.values().forEach(edgeType => {
       configureModelElement(context, edgeType, RelationEdge, RelationEdgeView);
+
+      // proxy-* types render as plain GEdge (no libavoid/RelationEdge model), but same view, to prevent anchoring issues
+      configureModelElement(context, `proxy-${edgeType}`, GEdge, RelationEdgeView);
    });
 
-   configureModelElement(context, 'magic-connector-edge', RelationEdge, RelationEdgeView);
+   // Use GEdges for magic connector edges, to not get routed with libavoid and therefore not causing issues to
+   // the changeDirection functionality of the magic connector
+   configureModelElement(context, 'magic-connector-edge', GEdge, RelationEdgeView);
 
    ARCHIMATE_JUNCTION_TYPE_MAP.values().forEach(junctionType => {
       configureModelElement(context, junctionType, JunctionNode, JunctionNodeView);

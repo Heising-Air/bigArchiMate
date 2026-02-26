@@ -75,9 +75,12 @@
 }
 
 .label-edit input {
+   width: 100%;
    text-align: center;
+   box-sizing: border-box;
    background-color: transparent;
    outline-color: transparent;
+   font-weight: bold;
    border: 0;
    letter-spacing: 0.9px;
 }
@@ -146,11 +149,15 @@
    color: var(--arrow-filled-fill);
 }
 
-.sprotty-edge.aggregation .arrow,
 .sprotty-edge.realization .arrow,
 .sprotty-edge.specialization .arrow {
    fill: var(--arrow-empty-fill);
    color: var(--arrow-empty-fill);
+}
+
+.sprotty-edge.aggregation .circle {
+    fill: var(--arrow-empty-fill);
+    color: var(--arrow-empty-fill);
 }
 
 .sprotty-edge.serving .arrow,

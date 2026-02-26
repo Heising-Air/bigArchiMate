@@ -1,12 +1,10 @@
 import {
-   BoundsAware,
    boundsFeature,
    CircularNode,
    Dimension,
    EditableLabel,
    fadeFeature,
    GChildElement,
-   GEdge,
    GLabel,
    GModelElement,
    GParentElement,
@@ -17,9 +15,11 @@ import {
    LayoutContainer,
    layoutContainerFeature,
    ModelFilterPredicate,
+   Point,
    RectangularNode,
    WithEditableLabel
 } from '@eclipse-glsp/client';
+import { LibavoidEdge } from 'sprotty-routing-libavoid';
 
 export class ElementNode extends RectangularNode implements WithEditableLabel {
    get editableLabel(): (GChildElement & EditableLabel) | undefined {
@@ -37,20 +37,25 @@ export function isJunctionNode(junction: GModelElement): junction is JunctionNod
    return junction instanceof JunctionNode || false;
 }
 
-export class RelationEdge extends GEdge {}
+export class RelationEdge extends LibavoidEdge {}
 
 export class GEditableLabel extends GLabel implements EditableLabel {
-   editControlPositionCorrection = {
-      x: -9,
-      y: -7
-   };
+   get editControlPositionCorrection(): Point {
+      const nodeBounds = (this.parent as any).bounds;
+
+      const baseX = (nodeBounds?.x ?? 0) - (this.bounds?.x ?? 0);
+      return {
+         x: baseX + 5,
+         y: -4
+      };
+   }
 
    get editControlDimension(): Dimension {
-      const parentBounds = (this.parent as any as BoundsAware).bounds;
-      return {
-         width: parentBounds?.width ? parentBounds?.width + 5 : this.bounds.width - 10,
-         height: parentBounds?.height ? parentBounds.height + 3 : 100
-      };
+      const nb = (this.parent as any).bounds;
+      if (!nb) {
+         return { width: this.bounds.width, height: this.bounds.height };
+      }
+      return { width: nb.width, height: Math.max(20, this.bounds.height) };
    }
 }
 
