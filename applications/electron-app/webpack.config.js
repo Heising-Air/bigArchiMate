@@ -26,6 +26,14 @@ configs[0].plugins.push(
             to: 'icons'
          },
          {
+            from: path.resolve('.', '..', '..', 'packages', 'product', 'resources', 'gifs'),
+            to: 'gifs'
+         },
+         {
+            from: path.resolve('.', '..', '..', 'packages', 'product', 'resources', 'icons'),
+            to: 'product-icons'
+         },
+         {
             // libavoid wasm for sprotty-routing-libavoid
             from: path.resolve('.', '..', '..', 'node_modules', 'libavoid-js', 'dist', 'libavoid.wasm'),
             to: 'libavoid.wasm'

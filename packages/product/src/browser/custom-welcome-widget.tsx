@@ -1,12 +1,11 @@
 import * as React from '@theia/core/shared/react';
 import URI from '@theia/core/lib/common/uri';
 import { injectable, inject, postConstruct } from '@theia/core/shared/inversify';
-import { ReactWidget, LabelProvider, Key, KeyCode, codicon } from '@theia/core/lib/browser';
+import { ReactWidget, LabelProvider, Key, KeyCode, codicon, CommonCommands } from '@theia/core/lib/browser';
 import { CommandRegistry,Path, environment, isOSX } from '@theia/core/lib/common';
 import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
 import { WindowService } from '@theia/core/lib/browser/window/window-service';
 import { WorkspaceCommands, WorkspaceService } from '@theia/workspace/lib/browser';
-import { CommonCommands } from '@theia/core/lib/browser';
 import { KeymapsCommands } from '@theia/keymaps/lib/browser';
 import { GettingStartedWidget } from '@theia/getting-started/lib/browser/getting-started-widget';
 
@@ -52,8 +51,17 @@ export class CustomWelcomeWidget extends ReactWidget {
             <div className='bam-hero'>
                <div className='bam-hero-left'>
                   <div className='bam-brand'>
-                     <div className='bam-title'>bigArchiMate</div>
-                     <div className='bam-subtitle'>Open Source ArchiMate modeling based on Eclipse Theia + GLSP + Langium</div>
+                     <div className='bam-brand-row'>
+                        <img
+                           className='bam-logo'
+                           src={new URL('product-icons/BAM-Logo.png', window.location.href).toString()}
+                           alt='bigArchiMate Logo'
+                        />
+                        <div>
+                           <div className='bam-title'>bigArchiMate</div>
+                           <div className='bam-subtitle'>Open Source ArchiMate modeling based on Eclipse Theia + GLSP + Langium</div>
+                        </div>
+                     </div>
                   </div>
 
                   <div className='bam-description'>
@@ -73,8 +81,12 @@ export class CustomWelcomeWidget extends ReactWidget {
                         GitHub
                      </a>
                      <span className='bam-link-sep'>•</span>
-                     {/* TODO: add actual documentation link */}
-                     <a className='bam-link' href='https://github.com/' target='_blank' rel='noreferrer'>
+                     <a
+                        className='bam-link'
+                        href='https://github.com/borkdominik/bigArchiMate?tab=readme-ov-file#bigarchimate'
+                        target='_blank'
+                        rel='noreferrer'
+                     >
                         Documentation
                      </a>
                      <span className='bam-link-sep'>•</span>
@@ -91,29 +103,51 @@ export class CustomWelcomeWidget extends ReactWidget {
                      <div className='bam-section-title'>Key Features</div>
 
                      <div className='bam-feature-grid'>
-                        {FEATURES.map(f => (
-                           <div key={f.title} className='bam-card bam-feature'>
-                              <div className='bam-feature-title'>{f.title}</div>
-                              <div className='bam-feature-text'>{f.text}</div>
-                           </div>
-                        ))}
+                        {FEATURES.map((f, index) => {
+                           const rotated = ((index % 3) + Math.floor(index / 3)) % 3;
+                           const shape = index % 2;
+                           return (
+                              <div key={f.title} className={`bam-card bam-feature bam-layer-${rotated % 3} bam-shape-${shape}`}>
+                                 <div className='bam-feature-title'>{f.title}</div>
+                                 <div className='bam-feature-text'>{f.text}</div>
+                              </div>
+                           );
+                        })}
                      </div>
                   </div>
 
                   <div className='bam-section'>
                      <div className='bam-section-title'>See it in action</div>
-
-                     <div className='bam-gif-grid'>Gifs</div>
+                     <div className='bam-gif-grid'>
+                        <div className='bam-gif-item bam-layer-2'>
+                           <div className='bam-gif-title'>Magic Edge Connector</div>
+                           <img
+                              src={new URL('gifs/GIF-magic-edge-connector.gif', window.location.href).toString()}
+                              alt='Magic Edge Connector'
+                           />
+                        </div>
+                        <div className='bam-gif-item bam-layer-1'>
+                           <div className='bam-gif-title'>Textual, Graphical & Form-based Modeling</div>
+                           <img
+                              src={new URL('gifs/GIF-editing.gif', window.location.href).toString()}
+                              alt='Textual, Graphical & Form-based Modeling'
+                           />
+                        </div>
+                        <div className='bam-gif-item bam-layer-0'>
+                           <div className='bam-gif-title'>Libavoid Edge Routing</div>
+                           <img src={new URL('gifs/GIF-libavoid.gif', window.location.href).toString()} alt='Libavoid Edge Routing' />
+                        </div>
+                     </div>
                   </div>
 
                   <div className='bam-footer'>
-                     <span>bigArchiMate • ArchiMate 3.2 • Built with Eclipse Theia + GLSP</span>
+                     <span>bigArchiMate • ArchiMate 3.2 • Built with Eclipse Theia + GLSP + sprotty-routing-libavoid</span>
                   </div>
                </div>
 
                <div className='bam-hero-right'>
                   <div className='bam-action-grid'> {this.renderQuickActions()}</div>
-                  <div className='bam-section'>{this.renderRecent()}</div>
+                  {this.renderRecent()}
                </div>
             </div>
          </div>
@@ -134,7 +168,9 @@ export class CustomWelcomeWidget extends ReactWidget {
                   className='bam-recent-name'
                   onClick={() => this.openWorkspaceUri(wsUri)}
                   onKeyDown={e => {
-                     if (this.isEnterKey(e)) this.openWorkspaceUri(wsUri);
+                     if (this.isEnterKey(e)) {
+                        this.openWorkspaceUri(wsUri);
+                     }
                   }}
                >
                   {wsUri.path.base}
@@ -152,7 +188,9 @@ export class CustomWelcomeWidget extends ReactWidget {
                className='bam-action-link'
                onClick={this.doOpenRecentWorkspace}
                onKeyDown={e => {
-                  if (this.isEnterKey(e)) this.doOpenRecentWorkspace();
+                  if (this.isEnterKey(e)) {
+                     this.doOpenRecentWorkspace();
+                  }
                }}
             >
                More…
@@ -161,7 +199,7 @@ export class CustomWelcomeWidget extends ReactWidget {
       );
 
       return (
-         <div className='bam-card'>
+         <div className='bam-card bam-recent'>
             <div className='bam-card-title'>
                <i className={codicon('history')} style={{ marginRight: 8 }} />
                Recent
@@ -181,7 +219,9 @@ export class CustomWelcomeWidget extends ReactWidget {
                      className='bam-action-link'
                      onClick={this.doOpenFolder}
                      onKeyDown={e => {
-                        if (this.isEnterKey(e)) this.doOpenFolder();
+                        if (this.isEnterKey(e)) {
+                           this.doOpenFolder();
+                        }
                      }}
                   >
                      open a folder
@@ -231,22 +271,6 @@ export class CustomWelcomeWidget extends ReactWidget {
          </a>
       );
    }
-   /*
-   protected generateActionButtons(): React.ReactNode {
-      return ACTIONS.map(a => (
-         <button
-            key={a.id}
-            className={`bam-btn ${a.primary ? 'bam-btn-primary' : ''}`}
-            onClick={() => this.execute(a.commandId, a.args)}
-            title={a.description}
-            type='button'
-         >
-            <span className={`bam-btn-icon ${a.iconClass ?? ''}`} />
-            <span className='bam-btn-text'>{a.label}</span>
-         </button>
-      ));
-   }
-    */
 
    protected isEnterKey(e: React.KeyboardEvent): boolean {
       return Key.ENTER.keyCode === KeyCode.createKeyCode(e.nativeEvent).key?.keyCode;
@@ -271,40 +295,16 @@ export class CustomWelcomeWidget extends ReactWidget {
       this.windowService.openNewWindow(url, { external: true });
    }
 
-   protected doCreateNewModel = () => this.commandRegistry.executeCommand('new.model');
-   protected doCreateFile = () => this.commandRegistry.executeCommand(CommonCommands.NEW_UNTITLED_FILE.id);
-   protected doOpen = () => this.commandRegistry.executeCommand(WorkspaceCommands.OPEN.id);
-   protected doOpenFile = () => this.commandRegistry.executeCommand(WorkspaceCommands.OPEN_FILE.id);
-   protected doOpenFolder = () => this.commandRegistry.executeCommand(WorkspaceCommands.OPEN_FOLDER.id);
-   protected doOpenWorkspace = () => this.commandRegistry.executeCommand(WorkspaceCommands.OPEN_WORKSPACE.id);
-   protected doOpenRecentWorkspace = () => this.commandRegistry.executeCommand(WorkspaceCommands.OPEN_RECENT_WORKSPACE.id);
-   protected doOpenPreferences = () => this.commandRegistry.executeCommand(CommonCommands.OPEN_PREFERENCES.id);
-   protected doOpenKeyboardShortcuts = () => this.commandRegistry.executeCommand(KeymapsCommands.OPEN_KEYMAPS.id);
+   protected doCreateNewModel = (): Promise<unknown> => this.commandRegistry.executeCommand('new.model');
+   protected doOpen = (): Promise<unknown> => this.commandRegistry.executeCommand(WorkspaceCommands.OPEN.id);
+   protected doOpenFile = (): Promise<unknown> => this.commandRegistry.executeCommand(WorkspaceCommands.OPEN_FILE.id);
+   protected doOpenFolder = (): Promise<unknown> => this.commandRegistry.executeCommand(WorkspaceCommands.OPEN_FOLDER.id);
+   protected doOpenWorkspace = (): Promise<unknown> => this.commandRegistry.executeCommand(WorkspaceCommands.OPEN_WORKSPACE.id);
+   protected doOpenRecentWorkspace = (): Promise<unknown> =>
+      this.commandRegistry.executeCommand(WorkspaceCommands.OPEN_RECENT_WORKSPACE.id);
+   protected doOpenPreferences = (): Promise<unknown> => this.commandRegistry.executeCommand(CommonCommands.OPEN_PREFERENCES.id);
+   protected doOpenKeyboardShortcuts = (): Promise<unknown> => this.commandRegistry.executeCommand(KeymapsCommands.OPEN_KEYMAPS.id);
 }
-   /*
-   interface WelcomeAction {
-      id: string;
-      label: string;
-      description: string;
-      commandId: string;
-      args?: unknown[];
-      primary?: boolean;
-      iconClass?: string;
-   }
-
-   const ACTIONS: WelcomeAction[] = [
-      {
-         id: 'open-folder',
-         label: 'Open Folder',
-         description: 'Open Folder as workspace',
-         commandId: 'workspace:open',
-         primary: true,
-         iconClass: 'codicon codicon-folder-opened'
-      }
-      ];
-
-    */
-
    const FEATURES = [
       {
          title: 'Textual, Graphical & Form-based Modeling',
@@ -323,12 +323,13 @@ export class CustomWelcomeWidget extends ReactWidget {
          text: 'A scalable project structure for managing large architectures.'
       },
       {
-         title: 'Custom Model Service Facade',
-         text: 'Designed for integration, automation, and custom workflows.'
-      },
-      {
          title: 'Magic Edge Connector',
          text: 'Intelligent edge creation that suggests valid relationships based on the model context.'
+      },
+      {
+         title: 'Libavoid Edge Routing',
+         text: 'High-quality orthogonal edge routing with obstacle avoidance, ' +
+            'segment nudging, and automatic path optimization for clean, professional diagrams.'
       }
    ];
 

@@ -14,6 +14,20 @@
     margin-bottom: 22px;
 }
 
+.bam-logo {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    border-radius: 15px;
+    border: 1px solid var(--theia-widget-border);
+}
+
+.bam-brand-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
 .bam-title {
     font-size: 34px;
     font-weight: 700;
@@ -123,15 +137,29 @@
     font-weight: 550;
 }
 
+.bam-recent {
+    margin-top: 22px;
+}
+
 .bam-section {
-    margin-top: 18px;
+    position: relative;
+    padding: 32px 24px 24px 24px;
+    margin-top: 40px;
+    border: 2px dashed var(--theia-descriptionForeground);
+    background: var(--theia-editorWidget-background);
 }
 
 .bam-section-title {
+    position: absolute;
+    top: -28px;
+    left: -2px;
+    padding: 2px 10px;
     font-size: 14px;
-    font-weight: 700;
-    margin: 14px 0 10px 0;
-    opacity: 0.95;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border: 2px dashed var(--theia-descriptionForeground);
+    background: var(--theia-editorWidget-background);
+    border-bottom: none;
 }
 
 .bam-feature-grid {
@@ -140,11 +168,19 @@
     gap: 12px;
 }
 
-@media (max-width: 1100px) {
-    .bam-feature-grid { grid-template-columns: repeat(2, 1fr); }
+.bam-feature {
+    padding: 18px 20px;
+    border: 2px solid;
+    border-radius: 8px;
+    background: var(--theia-editorWidget-background);
+    position: relative;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    font-family: inherit;
 }
-@media (max-width: 720px) {
-    .bam-feature-grid { grid-template-columns: 1fr; }
+
+.bam-feature:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .bam-feature-title {
@@ -158,28 +194,62 @@
     opacity: 0.9;
 }
 
+
+
+/* Container bleibt gleich */
 .bam-gif-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    display: flex;
+    gap: 32px;
+    margin-top: 32px;
+    align-items: stretch;
 }
 
-@media (max-width: 980px) {
-    .bam-gif-grid { grid-template-columns: 1fr; }
+/* Card */
+.bam-gif-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid;
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    overflow: visible;
 }
 
-.bam-gif-img {
+.bam-gif-item:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Titel */
+.bam-gif-title {
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-bottom: 2px solid;
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+}
+
+/* GIF Wrapper */
+.bam-gif-item img {
     width: 100%;
-    border-radius: 10px;
-    border: 1px solid var(--theia-editorWidget-border);
-    background: var(--theia-editor-background);
-    display: block;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border: 1px solid var(--theia-widget-border);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transform-origin: center center; /* wichtig */
 }
 
-.bam-gif-caption {
-    margin-top: 8px;
-    font-size: 12px;
-    opacity: 0.85;
+/* Hover Zoom – zentriert */
+.bam-gif-item:hover img {
+    transform: scale(1.5);
+    position: relative;
+    z-index: 20;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 }
 
 .bam-footer {
@@ -212,6 +282,34 @@
     margin-top: 10px;
     font-size: 12px;
     opacity: 0.8;
+}
+
+.bam-shape-0 {
+    border-radius: 0;
+    clip-path: none;
+}
+
+.bam-shape-1 {
+    border-radius: 12px;
+    clip-path: none;
+}
+
+/* Business Layer */
+.bam-layer-0 {
+    background: #fff2cc;
+    border-color: #d6b656;
+}
+
+/* Application Layer */
+.bam-layer-1 {
+    background: #d9e1f2;
+    border-color: #5b9bd5;
+}
+
+/* Technology Layer */
+.bam-layer-2 {
+    background: #e2f0d9;
+    border-color: #70ad47;
 }
 
 .bam-recent-row { padding: 8px 0; border-top: 1px solid var(--theia-editorWidget-border); }
