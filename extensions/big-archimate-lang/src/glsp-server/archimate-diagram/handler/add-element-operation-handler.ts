@@ -40,7 +40,8 @@ export class AddElementOperationHandler extends JsonOperationHandler {
             x: operation.position.x,
             y: operation.position.y,
             width: 200,
-            height: 50
+            height: 50,
+            children: []
          };
          container.nodes.push(node);
       }

@@ -37,7 +37,11 @@ export class ArchiMateDiagramGModelFactory implements GModelFactory {
 
    protected createNode(node: ElementNode | JunctionNode): GNode {
       if (node.$type === 'ElementNode') {
-         return GElementNode.builder().set(node, this.modelState.index).build();
+         const gNode = GElementNode.builder().set(node, this.modelState.index).build();
+         for (const child of node.children) {
+            gNode.children.push(this.createNode(child));
+         }
+         return gNode;
       }
       return GJunctionNode.builder().set(node, this.modelState.index).build();
    }

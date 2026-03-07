@@ -46,7 +46,8 @@ export class DropElementOperationHandler extends JsonOperationHandler {
                x: (x += 10),
                y: (y += 10),
                width: 200,
-               height: 50
+               height: 50,
+               children: []
             };
             container.nodes.push(node);
          }

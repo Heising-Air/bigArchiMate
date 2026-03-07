@@ -241,7 +241,7 @@ export class Validator {
       }
 
       for(const child of node.children) {
-         if(isElementNode(child) && !isGroupingNode(child)) {
+         if(isElementNode(child) && isGroupingNode(child)) {
             accept('error', 'Nestes groupings are not supported yet.', {
                node: child,
                property: 'children'
