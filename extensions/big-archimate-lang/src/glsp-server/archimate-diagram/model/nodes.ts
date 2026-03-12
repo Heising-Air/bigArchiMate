@@ -40,6 +40,30 @@ export class GElementNodeBuilder extends GNodeBuilder<GElementNode> {
       // Get the reference that the DiagramNode holds to the Element in the .langium file.
       const elementRef = node.element?.ref;
 
+      if (elementType === 'Grouping') {
+         this.id(index.createId(node));
+         this.type('node:grouping');
+         this.addCssClasses('diagram-node', 'element', 'grouping');
+         this.addArg(REFERENCE_CONTAINER_TYPE, ElementNode);
+         this.addArg(REFERENCE_PROPERTY, 'element');
+         this.addArg(REFERENCE_VALUE, node.element.$refText);
+         this.addArg('label', elementRef?.name || elementRef?.id || 'Grouping');
+
+         this.size(node.width || 200, node.height || 120).position(node.x || 100, node.y || 100);
+
+         this.add(
+            GLabel.builder()
+               .type(ELEMENT_LABEL_TYPE)
+               .text(elementRef?.name || elementRef?.id || 'Grouping')
+               .id(`${this.proxy.id}_label`)
+               .addCssClass('grouping-label')
+               .position(10,5)
+               .build()
+         );
+
+         return this;
+      }
+
       const getBackgroundCssClass = (): string => {
          if (elementLayer !== 'Other') {
             return `bg-${toKebabCase(elementLayer)}`;

@@ -31,6 +31,16 @@ export function isElementNode(element: GModelElement): element is ElementNode {
    return element instanceof ElementNode || false;
 }
 
+export class GroupingNode extends RectangularNode implements WithEditableLabel {
+   get editableLabel(): (GChildElement & EditableLabel) | undefined {
+      return this.children.find(child => isEditableLabel(child)) as (GChildElement & EditableLabel) | undefined;
+   }
+}
+
+export function isGroupingNode(element: GModelElement): element is GroupingNode {
+   return element instanceof GroupingNode || false;
+}
+
 export class JunctionNode extends CircularNode {}
 
 export function isJunctionNode(junction: GModelElement): junction is JunctionNode {
@@ -44,6 +54,13 @@ export class GEditableLabel extends GLabel implements EditableLabel {
       const nodeBounds = (this.parent as any).bounds;
 
       const baseX = (nodeBounds?.x ?? 0) - (this.bounds?.x ?? 0);
+
+      if(this.parent?.type === 'node:grouping') {
+         return {
+            x: -4,
+            y: -4
+         }
+      }
       return {
          x: baseX + 5,
          y: -4
@@ -51,6 +68,12 @@ export class GEditableLabel extends GLabel implements EditableLabel {
    }
 
    get editControlDimension(): Dimension {
+      if(this.parent?.type === 'node:grouping') {
+         return {
+            width: Math.max(80, this.bounds?.width ?? 80),
+            height: Math.max(20, this.bounds?.height ?? 20)
+         }
+      }
       const nb = (this.parent as any).bounds;
       if (!nb) {
          return { width: this.bounds.width, height: this.bounds.height };
