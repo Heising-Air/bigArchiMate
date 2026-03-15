@@ -13,6 +13,7 @@ import {
 import { ArgsUtil, GCompartment, GLabel, GNode, GNodeBuilder } from '@eclipse-glsp/server';
 import { ElementNode, JunctionNode } from '../../../language-server/generated/ast.js';
 import { ArchiMateGModelIndex } from '../../common/gmodel-index.js';
+import { getAbsolutePosition } from '../../../language-server/util/ast-util.js';
 
 export class GElementNode extends GNode {
    static override builder(): GElementNodeBuilder {
@@ -39,6 +40,7 @@ export class GElementNodeBuilder extends GNodeBuilder<GElementNode> {
 
       // Get the reference that the DiagramNode holds to the Element in the .langium file.
       const elementRef = node.element?.ref;
+      const absolutePosition = getAbsolutePosition(node);
 
       if (elementType === 'Grouping') {
          this.id(index.createId(node));
@@ -49,7 +51,7 @@ export class GElementNodeBuilder extends GNodeBuilder<GElementNode> {
          this.addArg(REFERENCE_VALUE, node.element.$refText);
          this.addArg('label', elementRef?.name || elementRef?.id || 'Grouping');
 
-         this.size(node.width || 200, node.height || 120).position(node.x || 100, node.y || 100);
+         this.size(node.width || 200, node.height || 120).position(absolutePosition.x || 100, absolutePosition.y || 100);
 
          this.add(
             GLabel.builder()
@@ -105,7 +107,7 @@ export class GElementNodeBuilder extends GNodeBuilder<GElementNode> {
          .addLayoutOption('hGap', H_GAP)
          .addLayoutOption('prefWidth', node.width || 100)
          .addLayoutOption('prefHeight', node.height || 100)
-         .position(node.x || 100, node.y || 100);
+         .position(absolutePosition.x || 100, absolutePosition.y || 100);
 
       return this;
    }
@@ -127,6 +129,7 @@ export class GJunctionNodeBuilder extends GNodeBuilder<GJunctionNode> {
 
       this.id(index.createId(node));
       this.type(ARCHIMATE_JUNCTION_TYPE_MAP.get(junctionType));
+      const absolutePosition = getAbsolutePosition(node);
 
       // Options which are the same for every node
       this.addCssClasses('diagram-node', 'junction', `bg-junction-${toKebabCase(junctionType)}`);
@@ -137,7 +140,7 @@ export class GJunctionNodeBuilder extends GNodeBuilder<GJunctionNode> {
       // The DiagramNode in the langium file holds the coordinates of node
       this.layout('vbox')
          .size(25, 25)
-         .position(node.x || 100, node.y || 100);
+         .position(absolutePosition.x || 100, absolutePosition.y || 100);
 
       return this;
    }
