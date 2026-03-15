@@ -1,4 +1,4 @@
-import { ConceptType, ElementType, isElementType, JunctionType, LayerType, RelationType } from './glsp/types';
+import { ConceptType, ElementType, JunctionType, LayerType, RelationType } from './glsp/types';
 import { getObjectEntries } from './util';
 
 type CornerType = 'round' | 'square' | 'diamond';
@@ -39,7 +39,7 @@ interface ElementMetaData extends LayeredConceptMetaData {
 /**
  * Metadata of a junction.
  */
-interface JunctionMetaData extends LayeredConceptMetaData {}
+interface JunctionMetaData extends ConceptMetaData {}
 
 /**
  * Metadata of an ArchiMate relation type.
@@ -537,13 +537,11 @@ const junctionMetadataMap: Record<JunctionType, JunctionMetaData> = {
    And: {
       icon: 'archimate-junction-and',
       label: '(And) Junction',
-      layer: 'Other',
       specificationSection: '5.5.1.'
    },
    Or: {
       icon: 'archimate-junction-or',
       label: 'Or Junction',
-      layer: 'Other',
       specificationSection: '5.5.1.'
    }
 };
@@ -567,7 +565,7 @@ type LayeredConceptType = ElementType | JunctionType;
 export const getLayerConcepts = (layerType: LayerType): Partial<Record<LayeredConceptType, LayeredConceptMetaData>> => {
    const filtered: Partial<Record<LayeredConceptType, LayeredConceptMetaData>> = {};
 
-   getObjectEntries({ ...elementMetadataMap, ...junctionMetadataMap }).forEach(([conceptType, conceptInfo]) => {
+   getObjectEntries({ ...elementMetadataMap, }).forEach(([conceptType, conceptInfo]) => {
       if (conceptInfo.layer === layerType) {
          filtered[conceptType] = conceptInfo;
       }
@@ -633,7 +631,6 @@ export const getLabel = (conceptOrLayer: ConceptType | LayerType): string => {
 };
 export const getIcon = (concept: ConceptType): string => conceptMetaDataMap[concept].icon;
 export const getSpecificationSection = (concept: ConceptType): string => conceptMetaDataMap[concept].specificationSection;
-export const getLayer = (concept: LayeredConceptType): LayerType =>
-   isElementType(concept) ? elementMetadataMap[concept].layer : junctionMetadataMap[concept].layer;
+export const getLayer = (concept: LayeredConceptType): LayerType => elementMetadataMap[concept as ElementType].layer;
 export const getCornerType = (element: ElementType): CornerType => elementMetadataMap[element].cornerType;
 export const getChildren = (layer: LayerType): Partial<Record<LayeredConceptType, LayeredConceptMetaData>> => layers[layer].children;
