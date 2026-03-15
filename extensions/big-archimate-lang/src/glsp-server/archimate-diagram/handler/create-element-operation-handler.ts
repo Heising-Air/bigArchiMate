@@ -35,6 +35,11 @@ export class CreateElementOperationHandler extends JsonCreateNodeOperationHandle
       }
       const container = this.modelState.diagram;
       const location = this.getLocation(operation) ?? Point.ORIGIN;
+
+      const isGrouping = element.type === 'Grouping';
+      const width = isGrouping ? 400 : 200;
+      const height = isGrouping ? 250 : 50;
+
       const node: ElementNode = {
          $type: ElementNode,
          $container: container,
@@ -45,8 +50,8 @@ export class CreateElementOperationHandler extends JsonCreateNodeOperationHandle
          },
          x: location.x,
          y: location.y,
-         width: 200,
-         height: 50,
+         width: width,
+         height: height,
          children: []
       };
       container.nodes.push(node);
