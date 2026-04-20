@@ -8,6 +8,7 @@ import { WindowService } from '@theia/core/lib/browser/window/window-service';
 import { WorkspaceCommands, WorkspaceService } from '@theia/workspace/lib/browser';
 import { KeymapsCommands } from '@theia/keymaps/lib/browser';
 import { GettingStartedWidget } from '@theia/getting-started/lib/browser/getting-started-widget';
+import { Message } from '@theia/core/shared/@lumino/messaging';
 
 @injectable()
 export class CustomWelcomeWidget extends ReactWidget {
@@ -33,16 +34,30 @@ export class CustomWelcomeWidget extends ReactWidget {
    protected home?: string;
 
    @postConstruct()
-   protected async init(): Promise<void> {
-      this.id = CustomWelcomeWidget.ID;
-      this.title.label = 'Welcome to bigArchiMate ';
+   protected init(): void {
+      this.id = GettingStartedWidget.ID;
+      this.title.label = 'Welcome';
       this.title.closable = true;
-      this.title.iconClass = 'codicon codicon-home';
+      this.title.iconClass = 'fa fa-home';
 
+      this.addClass('theia-welcome-view');
+      //this.recentWorkspaces = await this.workspaceService.recentWorkspaces();
+      //this.home = new URI(await this.environments.getHomeDirUri()).path.toString();
+      this.node.tabIndex = 0;
+
+      void this.initializeData();
+      this.update();
+   }
+
+   protected async initializeData(): Promise<void> {
       this.recentWorkspaces = await this.workspaceService.recentWorkspaces();
       this.home = new URI(await this.environments.getHomeDirUri()).path.toString();
-
       this.update();
+   }
+
+   protected override onActivateRequest(msg: Message): void {
+      super.onActivateRequest(msg);
+      this.node.focus();
    }
 
    protected override render(): React.ReactNode {
@@ -58,7 +73,9 @@ export class CustomWelcomeWidget extends ReactWidget {
                            alt='bigArchiMate Logo'
                         />
                         <div>
-                           <div className='bam-title'>bigArchiMate</div>
+                           <div className='bam-title'>
+                              <BigArchiMate />
+                           </div>
                            <div className='bam-subtitle'>Open Source ArchiMate modeling based on Eclipse Theia + GLSP + Langium</div>
                         </div>
                      </div>
@@ -70,9 +87,12 @@ export class CustomWelcomeWidget extends ReactWidget {
                         Traditional modeling tools are often proprietary, platform-dependent, and hard to extend.
                      </p>
                      <p>
-                        <b>bigArchiMate</b> is a flexible, open-source ArchiMate modeling tool built on Eclipse Theia, leveraging GLSP and
-                        Langium to provide an integrated modeling experience. It supports textual, graphical, and form-based modeling, kept
-                        in sync via a shared semantic model — including automated multi-client syncing mechanisms.
+                        <b>
+                           <BigArchiMate />
+                        </b>{' '}
+                        is a flexible, open-source ArchiMate modeling tool built on Eclipse Theia, leveraging GLSP and Langium to provide an
+                        integrated modeling experience. It supports textual, graphical, and form-based modeling, kept in sync via a shared
+                        semantic model — including automated multi-client syncing mechanisms.
                      </p>
                   </div>
 
@@ -141,12 +161,14 @@ export class CustomWelcomeWidget extends ReactWidget {
                   </div>
 
                   <div className='bam-footer'>
-                     <span>bigArchiMate • ArchiMate 3.2 • Built with Eclipse Theia + GLSP + sprotty-routing-libavoid</span>
+                     <span>
+                        <BigArchiMate /> • ArchiMate 3.2 • Built with Eclipse Theia + GLSP + sprotty-routing-libavoid
+                     </span>
                   </div>
                </div>
 
                <div className='bam-hero-right'>
-                  <div className='bam-action-grid'> {this.renderQuickActions()}</div>
+                  {this.renderQuickActions()}
                   {this.renderRecent()}
                </div>
             </div>
@@ -239,37 +261,68 @@ export class CustomWelcomeWidget extends ReactWidget {
       return (
          <div className='bam-card bam-actions'>
             <div className='bam-card-title'>Quick Actions</div>
+            <div className='bam-actions-row'>
+               <div className='bam-action-grid'>
+                  {this.renderActionLink('New Model', this.doCreateNewModel, !this.workspaceService.opened, 'Open a folder first')}
+                  {requireSingleOpen && this.renderActionLink('Open', this.doOpen)}
+                  {!requireSingleOpen && this.renderActionLink('Open File', this.doOpenFile)}
+                  {!requireSingleOpen && this.renderActionLink('Open Folder', this.doOpenFolder)}
+               </div>
 
-            <div className='bam-action-grid'>
-               {this.renderActionLink('New Model', this.doCreateNewModel)}
-               {requireSingleOpen && this.renderActionLink('Open', this.doOpen)}
-               {!requireSingleOpen && this.renderActionLink('Open File', this.doOpenFile)}
-               {!requireSingleOpen && this.renderActionLink('Open Folder', this.doOpenFolder)}
-            </div>
-            <div className='bam-actions-sub'>
-               {this.renderActionLink('Settings', this.doOpenPreferences)} ·{' '}
-               {this.renderActionLink('Keyboard Shortcuts', this.doOpenKeyboardShortcuts)}
+               <div className='bam-actions-sub'>
+                  {this.renderActionLink('Settings', this.doOpenPreferences)}
+                  {this.renderActionLink('Keyboard Shortcuts', this.doOpenKeyboardShortcuts)}
+               </div>
             </div>
          </div>
       );
    }
 
-   protected renderActionLink(label: string, onClick: () => void): React.ReactNode {
-      return (
+   protected renderActionLink(label: string, onClick: () => void, disabled = false, disabledTitle?: string): React.ReactNode {
+      const iconClass = this.getIconForAction(label);
+      const link = (
          <a
             role='button'
-            tabIndex={0}
-            className='bam-action-link'
-            onClick={onClick}
+            tabIndex={disabled ? -1 : 0}
+            className={`bam-action-link${disabled ? ' bam-action-link--disabled' : ''}`}
+            title={disabled ? undefined : label}
+            onClick={disabled ? undefined : onClick}
             onKeyDown={e => {
-               if (this.isEnterKey(e)) {
+               if (!disabled && this.isEnterKey(e)) {
                   onClick();
                }
             }}
          >
-            {label}
+            <i className={`codicon ${iconClass}`} />
          </a>
       );
+      if (disabled) {
+         return (
+            <span className='bam-action-link--disabled-wrapper' title={disabledTitle}>
+               {link}
+            </span>
+         );
+      }
+      return link;
+   }
+
+   protected getIconForAction(label: string): string {
+      switch (label) {
+         case 'New Model':
+            return 'codicon-layers';
+         case 'Open':
+            return 'codicon-file';
+         case 'Open File':
+            return 'codicon-file';
+         case 'Open Folder':
+            return 'codicon-folder-opened';
+         case 'Settings':
+            return 'codicon-settings-gear';
+         case 'Keyboard Shortcuts':
+            return 'codicon-keyboard';
+         default:
+            return 'codicon-unverified';
+      }
    }
 
    protected isEnterKey(e: React.KeyboardEvent): boolean {
@@ -288,7 +341,11 @@ export class CustomWelcomeWidget extends ReactWidget {
    }
 
    protected openWorkspaceUri(uri: URI): void {
-      return this.workspaceService.open(uri);
+      console.log('welcome recent uri:', uri.toString());
+      console.log('current workspace:', this.workspaceService.workspace?.resource.toString());
+      setTimeout(() => {
+         this.workspaceService.open(uri);
+      }, 10);
    }
 
    protected doOpenExternalLink(url: string): void {
@@ -333,3 +390,8 @@ export class CustomWelcomeWidget extends ReactWidget {
       }
    ];
 
+   export const BigArchiMate = () => (
+      <>
+         <span className='brand-prefix'>big</span>ArchiMate
+      </>
+   );
