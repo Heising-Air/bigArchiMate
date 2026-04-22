@@ -4,11 +4,14 @@
     background: var(--theia-editor-background);
     height: 100%;
     overflow: auto;
+    max-width: 1400px;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
 .bam-hero {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 3fr 1fr;
     gap: 18px;
     align-items: start;
     margin-bottom: 22px;
@@ -81,7 +84,7 @@
 }
 
 .bam-card-title {
-    font-weight: 650;
+    font-weight: 700;
     margin-bottom: 10px;
     font-size: 13px;
     opacity: 0.95;
@@ -103,7 +106,6 @@
 
 .bam-actions-sub {
     margin-left: auto;
-    padding-left: 16px;
     font-size: 12px;
     opacity: 0.8;
 }
@@ -154,7 +156,7 @@
 
 .bam-btn-text {
     font-size: 13px;
-    font-weight: 550;
+    font-weight: 500;
 }
 
 .bam-recent {
@@ -167,6 +169,7 @@
     margin-top: 40px;
     border: 2px dashed var(--theia-descriptionForeground);
     background: var(--theia-editorWidget-background);
+    box-sizing: border-box;
 }
 
 .bam-section-title {
@@ -204,7 +207,7 @@
 }
 
 .bam-feature-title {
-    font-weight: 650;
+    font-weight: 700;
     margin-bottom: 6px;
 }
 
@@ -357,24 +360,24 @@
 
 /* Business Layer */
 .bam-layer-0 {
-    background: #fff2cc;
+    background: rgba(214, 182, 86, 0.15);
     border-color: #d6b656;
 }
 
 /* Application Layer */
 .bam-layer-1 {
-    background: #d9e1f2;
+    background: rgba(91, 155, 213, 0.15);
     border-color: #5b9bd5;
 }
 
 /* Technology Layer */
 .bam-layer-2 {
-    background: #e2f0d9;
+    background: rgba(112, 173, 71, 0.15);
     border-color: #70ad47;
 }
 
 .bam-recent-row { padding: 8px 0; border-top: 1px solid var(--theia-editorWidget-border); }
-.bam-recent-name { font-weight: 650; text-decoration: none; cursor: pointer; color: var(--theia-textLink-foreground); }
+.bam-recent-name { font-weight: 700; text-decoration: none; cursor: pointer; color: var(--theia-textLink-foreground); }
 .bam-recent-name:hover { text-decoration: underline; }
 .bam-recent-path { font-size: 12px; opacity: 0.75; margin-top: 2px; }
 .bam-empty-recent { font-size: 13px; opacity: 0.9; line-height: 1.5; }
