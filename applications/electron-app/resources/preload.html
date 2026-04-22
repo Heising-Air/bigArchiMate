@@ -3,46 +3,59 @@
 
 <head>
     <style>
-        html,
-        body {
-            background-color: black;
-        }
-
         html, body {
             height: 100%;
             margin: 0;
+            background-color: black;
         }
 
-        .splash {
-            background-image: url("resources/preload-img.png");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+        /* Override Theia's .theia-preload */
+        .theia-preload {
+            background: black !important;
         }
 
+        /* Hide Theia's built-in loading spinner */
+        .theia-preload::after {
+            display: none !important;
+        }
 
-        .spinner-overlay {
+        .bam-splash {
             position: fixed;
             inset: 0;
-            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
         }
 
-        .spinner {
-            position: absolute;
+        .bam-spinner-wrap {
+            position: fixed;
             left: 50%;
-            top: 80%;
+            top: 87%;
             transform: translate(-50%, -50%);
+            z-index: 1;
         }
 
-        @keyframes spin {
+        .bam-spinner {
+            width: 52px;
+            height: 52px;
+            border: 4px solid rgba(50, 50, 255, 0.15);
+            border-top-color: #aaaaaa;
+            border-radius: 50%;
+            animation: bam-spin 0.75s linear infinite;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes bam-spin {
             to { transform: rotate(360deg); }
         }
     </style>
 </head>
 
-<body class="splash">
-    <div class="spinner-overlay" aria-label="Loading">
-        <div class="spinner"></div>
+<body>
+    <img class="bam-splash" src="resources/preload-img.png" alt="" />
+    <div class="bam-spinner-wrap">
+        <div class="bam-spinner"></div>
     </div>
 </body>
 
