@@ -1,4 +1,13 @@
-import { ChangeBoundsOperation, Command, Dimension, JsonOperationHandler, ModelState, Point } from '@eclipse-glsp/server';
+import {
+   ActionDispatcher,
+   ChangeBoundsOperation,
+   Command,
+   Dimension,
+   JsonOperationHandler,
+   MessageAction,
+   ModelState,
+   Point
+} from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
 import { DiagramNode, ElementNode, JunctionNode, isElementNode } from '../../../language-server/generated/ast.js';
 import {
@@ -14,18 +23,21 @@ import { ArchiMateModelState } from '../../common/model-state.js';
 export class ChangeBoundsOperationHandler extends JsonOperationHandler {
    operationType = ChangeBoundsOperation.KIND;
    @inject(ModelState) protected override modelState!: ArchiMateModelState;
+   @inject(ActionDispatcher) protected actionDispatcher!: ActionDispatcher;
 
    createCommand(operation: ChangeBoundsOperation): Command {
       return new ArchiMateCommand(this.modelState, () => this.changeBounds(operation));
    }
 
-   protected changeBounds(operation: ChangeBoundsOperation): void {
-      operation.newBounds.forEach(elementAndBounds => {
+   protected async changeBounds(operation: ChangeBoundsOperation): Promise<void> {
+      const { nodeTargets, movingInto, movingOut } = this.buildMovingSets(operation);
+
+      for (const elementAndBounds of operation.newBounds) {
          const node =
             this.modelState.index.findElementNode(elementAndBounds.elementId) ??
             this.modelState.index.findJunctionNode(elementAndBounds.elementId);
          if (!node || !elementAndBounds.newPosition) {
-            return;
+            continue;
          }
 
          const newAbsPos = elementAndBounds.newPosition;
@@ -34,6 +46,29 @@ export class ChangeBoundsOperationHandler extends JsonOperationHandler {
          // Reparent non-grouping nodes when dragged into or out of a grouping.
          // Groupings themselves are excluded — nested groupings are not supported.
          if (!(isElementNode(node) && isGroupingNode(node))) {
+            const targetGrouping = nodeTargets.get(node) ?? undefined;
+            const currentGrouping = getParentElementNode(node);
+
+            if (targetGrouping !== currentGrouping) {
+               if (targetGrouping && this.hasCrossBoundaryEdges(node, targetGrouping, movingInto.get(targetGrouping))) {
+                  await this.actionDispatcher.dispatch(
+                     MessageAction.create(
+                        'Cannot place element inside grouping: it has connections to elements outside the grouping.',
+                        { severity: 'WARNING' }
+                     )
+                  );
+                  continue;
+               }
+               if (!targetGrouping && currentGrouping && this.hasInternalEdges(node, currentGrouping, movingOut.get(currentGrouping))) {
+                  await this.actionDispatcher.dispatch(
+                     MessageAction.create(
+                        'Cannot remove element from grouping: it has connections to elements inside the grouping.',
+                        { severity: 'WARNING' }
+                     )
+                  );
+                  continue;
+               }
+            }
             this.reparentIfNeeded(node, newAbsPos, newSize);
          }
 
@@ -52,7 +87,59 @@ export class ChangeBoundsOperationHandler extends JsonOperationHandler {
          }
          node.width = newSize.width;
          node.height = newSize.height;
-      });
+      }
+   }
+
+   /**
+    * Pre-processes all bounds entries to determine, for each non-grouping node:
+    * - nodeTargets: which grouping (or null = diagram root) each node will land in
+    * - movingInto:  per target grouping, all nodes moving into it in this operation
+    * - movingOut:   per current grouping, all nodes moving out of it in this operation
+    */
+   protected buildMovingSets(operation: ChangeBoundsOperation): {
+      nodeTargets: Map<ElementNode | JunctionNode, ElementNode | undefined>;
+      movingInto: Map<ElementNode, Set<DiagramNode>>;
+      movingOut: Map<ElementNode, Set<DiagramNode>>;
+   } {
+      const nodeTargets = new Map<ElementNode | JunctionNode, ElementNode | undefined>();
+      const movingInto = new Map<ElementNode, Set<DiagramNode>>();
+      const movingOut = new Map<ElementNode, Set<DiagramNode>>();
+
+      for (const elementAndBounds of operation.newBounds) {
+         if (!elementAndBounds.newPosition) {
+            continue;
+         }
+         const node =
+            this.modelState.index.findElementNode(elementAndBounds.elementId) ??
+            this.modelState.index.findJunctionNode(elementAndBounds.elementId);
+         if (!node || (isElementNode(node) && isGroupingNode(node))) {
+            continue;
+         }
+
+         const { newPosition: pos, newSize: size } = elementAndBounds;
+         const center = { x: pos.x + size.width / 2, y: pos.y + size.height / 2 };
+         const target = findGroupingContaining(center, this.modelState.diagram);
+         const current = getParentElementNode(node);
+
+         nodeTargets.set(node, target);
+
+         if (target !== current) {
+            if (target) {
+               if (!movingInto.has(target)) {
+                  movingInto.set(target, new Set());
+               }
+               movingInto.get(target)!.add(node);
+            }
+            if (current) {
+               if (!movingOut.has(current)) {
+                  movingOut.set(current, new Set());
+               }
+               movingOut.get(current)!.add(node);
+            }
+         }
+      }
+
+      return { nodeTargets, movingInto, movingOut };
    }
 
    /**
@@ -92,5 +179,49 @@ export class ChangeBoundsOperationHandler extends JsonOperationHandler {
          (diagram.nodes as DiagramNode[]).push(node);
          (node as any).$container = diagram;
       }
+   }
+
+   /**
+    * Returns true if moving the node into targetGrouping would create cross-boundary edges.
+    * Nodes in alsoMovingIn are treated as already inside the grouping (co-moved in same operation).
+    */
+   protected hasCrossBoundaryEdges(
+      node: ElementNode | JunctionNode,
+      targetGrouping: ElementNode,
+      alsoMovingIn: Set<DiagramNode> | undefined
+   ): boolean {
+      const insideAfterMove = new Set<DiagramNode>([...targetGrouping.children, ...(alsoMovingIn ?? [])]);
+      for (const edge of this.modelState.diagram.edges) {
+         const src = edge.sourceNode?.ref;
+         const tgt = edge.targetNode?.ref;
+         const other = src === node ? tgt : tgt === node ? src : undefined;
+         if (other !== undefined && !insideAfterMove.has(other)) {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   /**
+    * Returns true if removing the node from currentGrouping would create cross-boundary edges.
+    * Nodes in alsoMovingOut are treated as already outside the grouping (co-moved in same operation).
+    */
+   protected hasInternalEdges(
+      node: ElementNode | JunctionNode,
+      currentGrouping: ElementNode,
+      alsoMovingOut: Set<DiagramNode> | undefined
+   ): boolean {
+      const remainingInGrouping = new Set<DiagramNode>(
+         [...currentGrouping.children].filter(child => !(alsoMovingOut ?? new Set()).has(child))
+      );
+      for (const edge of this.modelState.diagram.edges) {
+         const src = edge.sourceNode?.ref;
+         const tgt = edge.targetNode?.ref;
+         const other = src === node ? tgt : tgt === node ? src : undefined;
+         if (other !== undefined && remainingInGrouping.has(other)) {
+            return true;
+         }
+      }
+      return false;
    }
 }
