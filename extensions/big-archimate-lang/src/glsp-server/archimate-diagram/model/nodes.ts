@@ -5,6 +5,7 @@ import {
    ELEMENT_LABEL_TYPE,
    getCornerType,
    getLayer,
+   REFERENCE_CONTAINER_ID,
    REFERENCE_CONTAINER_TYPE,
    REFERENCE_PROPERTY,
    REFERENCE_VALUE,
@@ -47,6 +48,7 @@ export class GElementNodeBuilder extends GNodeBuilder<GElementNode> {
          this.type('node:grouping');
          this.addCssClasses('diagram-node', 'element', 'grouping');
          this.addArg(REFERENCE_CONTAINER_TYPE, ElementNode);
+         this.addArg(REFERENCE_CONTAINER_ID, index.services.language.references.IdProvider.getLocalId(node) ?? '');
          this.addArg(REFERENCE_PROPERTY, 'element');
          this.addArg(REFERENCE_VALUE, node.element.$refText);
          this.addArg('label', elementRef?.name || elementRef?.id || 'Grouping');
@@ -78,6 +80,7 @@ export class GElementNodeBuilder extends GNodeBuilder<GElementNode> {
       // Options which are the same for every node
       this.addCssClasses('diagram-node', 'element', getBackgroundCssClass());
       this.addArg(REFERENCE_CONTAINER_TYPE, ElementNode);
+      this.addArg(REFERENCE_CONTAINER_ID, index.services.language.references.IdProvider.getLocalId(node) ?? '');
       this.addArg(REFERENCE_PROPERTY, 'element');
       this.addArg(REFERENCE_VALUE, node.element.$refText);
 
@@ -134,6 +137,7 @@ export class GJunctionNodeBuilder extends GNodeBuilder<GJunctionNode> {
       // Options which are the same for every node
       this.addCssClasses('diagram-node', 'junction', `bg-junction-${toKebabCase(junctionType)}`);
       this.addArg(REFERENCE_CONTAINER_TYPE, JunctionNode);
+      this.addArg(REFERENCE_CONTAINER_ID, index.services.language.references.IdProvider.getLocalId(node) ?? '');
       this.addArg(REFERENCE_PROPERTY, 'junction');
       this.addArg(REFERENCE_VALUE, node.junction.$refText);
 
