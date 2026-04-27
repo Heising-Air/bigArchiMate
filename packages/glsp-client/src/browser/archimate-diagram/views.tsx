@@ -8,6 +8,7 @@ import {
    CircularNodeView,
    GEdge,
    GNode,
+   hiddenBoundingRect,
    Point,
    PolylineEdgeView,
    RenderingContext,
@@ -33,7 +34,8 @@ export class GroupingNodeView extends ShapeView {
 
       const label = (labelChild as any)?.text ?? '';
 
-      const labelBackgroundWidth = Math.max(50, label.length * 7 + 8);
+      // Character-width approximation: no DOM access in virtual render, so exact metrics aren't available.
+      const labelBackgroundWidth = Math.max(60, label.length * 8 + 16);
       const labelBackgroundHeight = 20;
 
       const renderedLabel = labelChild ? context.renderElement(labelChild) : undefined;
@@ -41,6 +43,7 @@ export class GroupingNodeView extends ShapeView {
 
       return (
          <g class-diagram-node={true} class-element={true} class-grouping={true} data-svg-metadata-type={node.type}>
+            {hiddenBoundingRect(node, context) as any}
             <rect class-sprotty-node={true} x={0} y={labelBackgroundHeight + 0.75} width={width} height={height - labelBackgroundHeight - 0.75} />
             <rect
                class-grouping-label-background={true}
@@ -83,10 +86,6 @@ export class GroupingNodeView extends ShapeView {
       ) as any;
    }
 
-   protected getGroupingLabel(node: Readonly<GNode>): string {
-      const labelChild = node.children.find(child => child.id === `${node.id}_label`) as any;
-      return labelChild?.text ?? '';
-   }
 }
 
 @injectable()

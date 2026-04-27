@@ -32,8 +32,7 @@ import { IconView } from './icon-view';
 import { ElementNode, GEditableLabel, GroupingNode, Icon, JunctionNode, RelationEdge } from './model';
 import { archiMateNodeCreationModule } from './node-creation-tool/node-creation-tool-module';
 import { archiMateSelectModule } from './select-tool/select-tool-module';
-import { ElementNodeView, JunctionNodeView, RelationEdgeView } from './views';
-import { GroupingNodeView } from '../../../lib/browser/archimate-diagram/views';
+import { ElementNodeView, GroupingNodeView, JunctionNodeView, RelationEdgeView } from './views';
 
 export class ArchiMateDiagramConfiguration extends GLSPDiagramConfiguration {
    diagramType: string = ArchiMateDiagramLanguage.diagramType;

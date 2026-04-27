@@ -57,10 +57,10 @@ export class ArchiMateDiagramGModelFactory implements GModelFactory {
       return result;
    }
 
-   protected collectFlattenedNodes(node: DiagramNode, result: DiagramNode[]): void{
+   protected collectFlattenedNodes(node: DiagramNode, result: DiagramNode[]): void {
       result.push(node);
 
-      if(node.$type === 'ElementNode') {
+      if (node.$type === 'ElementNode') {
          for (const child of node.children) {
             this.collectFlattenedNodes(child, result);
          }

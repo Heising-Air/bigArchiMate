@@ -304,3 +304,21 @@ export function getAbsolutePosition(node: DiagramNode): Point{
 export function isGroupingNode(node: ElementNode): boolean {
    return node.element.ref?.type === 'Grouping';
 }
+
+/**
+ * Returns the first top-level grouping in the diagram whose bounds contain the given absolute point,
+ * or undefined if the point lies outside all groupings.
+ * Only top-level groupings are searched because nested groupings are not supported.
+ */
+export function findGroupingContaining(position: Point, diagram: Diagram): ElementNode | undefined {
+   for (const node of diagram.nodes) {
+      if (!isElementNode(node) || !isGroupingNode(node)) {
+         continue;
+      }
+      if (position.x >= node.x && position.x <= node.x + node.width &&
+          position.y >= node.y && position.y <= node.y + node.height) {
+         return node;
+      }
+   }
+   return undefined;
+}
