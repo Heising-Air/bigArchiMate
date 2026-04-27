@@ -1,4 +1,10 @@
-# bigArchiMate
+<!-- LOGO -->
+<p align="center">
+  <img src="./docs/BAM-Logo.png" alt="Logo" width="150" height="150" style="border-radius: 20px;"/>
+</p>
+
+<!-- TITLE -->
+<h1 align="center">bigArchiMate</h1>
 
 ## About
 
