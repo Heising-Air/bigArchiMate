@@ -3,13 +3,90 @@
 /** @jsx svg */
 
 import { ARCHIMATE_RELATION_TYPE_MAP } from '@big-archimate/protocol';
-import { angleOfPoint, CircularNodeView, GEdge, Point, PolylineEdgeView, RenderingContext, svg, toDegrees } from '@eclipse-glsp/client';
+import {
+   angleOfPoint,
+   CircularNodeView,
+   GEdge,
+   GNode,
+   hiddenBoundingRect,
+   Point,
+   PolylineEdgeView,
+   RenderingContext,
+   ShapeView,
+   svg,
+   toDegrees
+} from '@eclipse-glsp/client';
 import { injectable } from 'inversify';
 import { VNode } from 'snabbdom';
 import { DiagramNodeView } from '../views';
 
 @injectable()
 export class ElementNodeView extends DiagramNodeView {}
+
+export class GroupingNodeView extends ShapeView {
+   override render(node: Readonly<GNode>, context: RenderingContext): VNode {
+      const bounds = node.bounds;
+      const width = bounds?.width ?? 200;
+      const height = bounds?.height ?? 120;
+
+      const labelChild = node.children.find(child => child.id === `${node.id}_label`);
+      const contentChildren = node.children.filter(child => child.id !== `${node.id}_label`);
+
+      const label = (labelChild as any)?.text ?? '';
+
+      // Character-width approximation: no DOM access in virtual render, so exact metrics aren't available.
+      const labelBackgroundWidth = Math.max(60, label.length * 8 + 16);
+      const labelBackgroundHeight = 20;
+
+      const renderedLabel = labelChild ? context.renderElement(labelChild) : undefined;
+      const renderedContentChildren = contentChildren.map(child => context.renderElement(child));
+
+      return (
+         <g class-diagram-node={true} class-element={true} class-grouping={true} data-svg-metadata-type={node.type}>
+            {hiddenBoundingRect(node, context) as any}
+            <rect class-sprotty-node={true} x={0} y={labelBackgroundHeight + 0.75} width={width} height={height - labelBackgroundHeight - 0.75} />
+            <rect
+               class-grouping-label-background={true}
+               x={0}
+               y={0}
+               width={labelBackgroundWidth}
+               height={labelBackgroundHeight}
+            />
+
+            {/* Top border of label */}
+            <line
+               class-grouping-label-border={true}
+               x1={0}
+               y1={0}
+               x2={labelBackgroundWidth}
+               y2={0}
+            />
+
+            {/* Left border of label */}
+            <line
+               class-grouping-label-border={true}
+               x1={0}
+               y1={0}
+               x2={0}
+               y2={labelBackgroundHeight}
+            />
+
+            {/* Right border of label */}
+            <line
+               class-grouping-label-border={true}
+               x1={labelBackgroundWidth}
+               y1={0}
+               x2={labelBackgroundWidth}
+               y2={labelBackgroundHeight}
+            />
+
+            {renderedLabel as any}
+            {renderedContentChildren as any}
+         </g>
+      ) as any;
+   }
+
+}
 
 @injectable()
 export class JunctionNodeView extends CircularNodeView {}
