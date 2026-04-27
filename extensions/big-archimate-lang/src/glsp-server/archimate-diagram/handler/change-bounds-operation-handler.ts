@@ -88,6 +88,78 @@ export class ChangeBoundsOperationHandler extends JsonOperationHandler {
          node.width = newSize.width;
          node.height = newSize.height;
       }
+
+      await this.updateContainmentForChangedGroupings(operation);
+   }
+
+   /**
+    * After all grouping positions/sizes are committed, re-evaluates containment for every
+    * non-grouping node not already processed by the operation: adopts those whose center
+    * now falls inside a grouping, releases those whose center no longer does.
+    */
+   protected async updateContainmentForChangedGroupings(operation: ChangeBoundsOperation): Promise<void> {
+      const diagram = this.modelState.diagram;
+
+      const processedNodes = new Set<DiagramNode>();
+      for (const eb of operation.newBounds) {
+         const node =
+            this.modelState.index.findElementNode(eb.elementId) ??
+            this.modelState.index.findJunctionNode(eb.elementId);
+         if (node) {processedNodes.add(node);}
+      }
+
+      for (const eb of operation.newBounds) {
+         const grouping = this.modelState.index.findElementNode(eb.elementId);
+         if (!grouping || !isGroupingNode(grouping)) {continue;}
+
+         const candidates = [
+            ...(diagram.nodes as DiagramNode[]).filter(n =>
+               !processedNodes.has(n) && !(isElementNode(n) && isGroupingNode(n))
+            ),
+            ...(grouping.children as DiagramNode[]).filter(n => !processedNodes.has(n))
+         ] as (ElementNode | JunctionNode)[];
+
+         for (const node of candidates) {
+            const currentParent = getParentElementNode(node);
+            const absPos: Point = currentParent
+               ? { x: currentParent.x + node.x, y: currentParent.y + node.y }
+               : { x: node.x, y: node.y };
+            const size: Dimension = { width: node.width, height: node.height };
+            const center: Point = { x: absPos.x + size.width / 2, y: absPos.y + size.height / 2 };
+            const newParent = findGroupingContaining(center, diagram);
+
+            if (newParent === currentParent) {continue;}
+
+            if (newParent && this.hasCrossBoundaryEdges(node, newParent, undefined)) {
+               await this.actionDispatcher.dispatch(
+                  MessageAction.create(
+                     'Cannot place element inside grouping: it has connections to elements outside the grouping.',
+                     { severity: 'WARNING' }
+                  )
+               );
+               continue;
+            }
+            if (!newParent && currentParent && this.hasInternalEdges(node, currentParent, undefined)) {
+               await this.actionDispatcher.dispatch(
+                  MessageAction.create(
+                     'Cannot remove element from grouping: it has connections to elements inside the grouping.',
+                     { severity: 'WARNING' }
+                  )
+               );
+               continue;
+            }
+
+            this.reparentIfNeeded(node, absPos, size);
+
+            if (newParent) {
+               node.x = absPos.x - newParent.x;
+               node.y = absPos.y - newParent.y;
+            } else {
+               node.x = absPos.x;
+               node.y = absPos.y;
+            }
+         }
+      }
    }
 
    /**
